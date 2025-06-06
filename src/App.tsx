@@ -17,20 +17,32 @@ function App() {
   };
 
   const createTable = (text: string): string => {
-    const lines = text.split("\n");
-    const resultLines: string[] = [];
+    const rows = text.split("\n");
+    const tableLines: string[] = [];
+    const latexPattern = /(?:\d+|\\(?:[A-Za-z]+|[#$%&_{}]))/g;
+    const emptyPattern = /^\\empty$/;
 
-    for (const row of lines) {
-      const cells = row.split(" ").filter((s) => s.trim() !== "");
-      if (cells.length === 0) continue;
-      for (let i = 0; i < cells.length; i++) {
-        if (cells[i] === "\\empty") cells[i] = "";
-      }
-      const line = `${cells.join(" & ")}  \\\\`;
-      resultLines.push(line);
+    for (const row of rows) {
+      // 空白文字をトリムしてからスペースで区切る
+      const cells = row.trim().split(/\s+/);
+      // 空行の場合表示しない
+      if (cells.length === 0 || (cells.length === 1 && cells[0] === ""))
+        continue;
+
+      const formattedCells = cells.map((cell) => {
+        // 中身が/emptyの場合空白セルとする
+        if (emptyPattern.test(cell)) {
+          return "";
+        }
+        // latex記号or数字と推測される場合\( \)で囲む
+        return cell.replace(latexPattern, (match) => ` \\( ${match} \\) `);
+      });
+      // 各セルを & で連結し \\ をつける
+      tableLines.push(`${formattedCells.join(" & ")}  \\\\`);
     }
 
-    return resultLines.join("\n");
+    // 改行する
+    return tableLines.join("\n");
   };
 
   const copyToClipboard = async () => {
