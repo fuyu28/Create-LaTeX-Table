@@ -4,6 +4,10 @@ import "./tailwind.css";
 function App() {
   const [input, setInput] = useState<string>("");
   const [output, setOutput] = useState<string>("");
+  const [copyStatus, setCopyStatus] = useState<{
+    message: string;
+    isError: boolean;
+  } | null>(null);
 
   const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const text = e.target.value;
@@ -32,10 +36,13 @@ function App() {
   const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(output);
-      alert("クリップボードにコピーしました！");
+      setCopyStatus({
+        message: "クリップボードにコピーしました！",
+        isError: false,
+      });
     } catch (err) {
       console.error("コピーに失敗しました:", err);
-      alert("コピーに失敗しました");
+      setCopyStatus({ message: `コピーに失敗しました\n${err}`, isError: true });
     }
   };
 
@@ -90,6 +97,18 @@ function App() {
           Copy
         </button>
       </div>
+      {/* コピー結果 */}
+      {copyStatus && (
+        <p
+          className={`mt-4 px-4 py-2 text-lg border rounded-md ${
+            copyStatus.isError
+              ? "border-red-600 text-red-600 bg-red-50"
+              : "border-green-600 text-green-600 bg-green-50"
+          }`}
+        >
+          {copyStatus.message}
+        </p>
+      )}
     </div>
   );
 }
