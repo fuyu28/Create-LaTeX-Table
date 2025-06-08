@@ -20,23 +20,26 @@ function App() {
     const rows = text.split("\n");
     const tableLines: string[] = [];
     const latexPattern = /(?:\d+|\\(?:[A-Za-z]+|[#$%&_{}]))/g;
-    const emptyPattern = /^\\empty$/;
 
     for (const row of rows) {
       // 空白文字をトリムしてからスペースで区切る
-      const cells = row.trim().split(/\s+/);
+      const cells = row.trim().split(/\s{2}/);
       // 空行の場合表示しない
       if (cells.length === 0 || (cells.length === 1 && cells[0] === ""))
         continue;
 
       const formattedCells = cells.map((cell) => {
+        cell = cell.trim();
+
         // 中身が/emptyの場合空白セルとする
-        if (emptyPattern.test(cell)) {
+        if (cell.match(/^\\empty$/)) {
           return "";
         }
-        // latex記号or数字と推測される場合\( \)で囲む
-        return cell.replace(latexPattern, (match) => ` \\( ${match} \\) `);
+
+        // 数字 or latex記号と推測される場合\( \)で囲む
+        return cell.replace(latexPattern, (match) => `\\( ${match} \\)`);
       });
+
       // 各セルを & で連結し \\ をつける
       tableLines.push(`${formattedCells.join(" & ")}  \\\\`);
     }
@@ -66,7 +69,7 @@ function App() {
         <p className="text-indigo-700 leading-relaxed">
           スペース区切りの値から LaTeX の表を作成する Web アプリです。
           <br />
-          スペースは項目の区切り、改行は行の区切りとして扱われます。
+          スペース二つを項目の区切り、改行を行の区切りとして扱います。
           <br />
           空白のセルを挿入したい場合は、
           <code className="bg-indigo-100 px-1 rounded">\empty </code>
